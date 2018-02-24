@@ -1,0 +1,9 @@
+{
+    "path" : "~/Documents/achim/statistik_r/solar_wetter_daten/solarzellen_data",
+    "sortOrder" : [
+        {
+            "ascending" : true,
+            "columnIndex" : 2
+        }
+    ]
+}

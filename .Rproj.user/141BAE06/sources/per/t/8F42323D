@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1514741253826.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "1001071814",
+    "id" : "8F42323D",
+    "lastKnownWriteTime" : 1514741930,
+    "last_content_update" : 1514741930559,
+    "path" : "~/Documents/achim/statistik_r/solar_wetter_daten/weather_stgt_data.R",
+    "project_path" : "weather_stgt_data.R",
+    "properties" : {
+        "cursorPosition" : "29,0",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 2,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}

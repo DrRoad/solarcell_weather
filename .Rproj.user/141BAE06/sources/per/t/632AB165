@@ -1,0 +1,23 @@
+{
+    "collab_server" : "",
+    "contents" : "",
+    "created" : 1519479342948.000,
+    "dirty" : false,
+    "encoding" : "UTF-8",
+    "folds" : "",
+    "hash" : "2472911657",
+    "id" : "632AB165",
+    "lastKnownWriteTime" : 1519479686,
+    "last_content_update" : 1519479686201,
+    "path" : "~/Documents/achim/statistik_r/solar_wetter_daten/summary_se.R",
+    "project_path" : "summary_se.R",
+    "properties" : {
+        "cursorPosition" : "0,63",
+        "scrollLine" : "0",
+        "tempName" : "Untitled1"
+    },
+    "relative_order" : 4,
+    "source_on_save" : false,
+    "source_window" : "",
+    "type" : "r_source"
+}
