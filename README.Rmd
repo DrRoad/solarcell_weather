@@ -1,0 +1,128 @@
+---
+title: "Solar cell data analysis"
+output: github_document
+---
+# Analysis of solar cell production
+
+Over the last 6 years I recorded the daily production of out roof mounted solar panels. The panels have a peak production of 10kw/p
+
+## Setup
+```{r setup, include=FALSE, echo=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+#load solarzellen data
+library(readr)
+library(dplyr)
+library(ggplot2)
+library(lubridate)
+source("summary_se.R")
+source("solar_auswertung.R")
+```
+
+## Read data
+Data were recorded daily and put in a spreadsheet. For every year a seperate spreadsheet was used. Data were then exported in csv-format, read into R and compined into one tible.
+
+
+```{r read_data, echo=FALSE, message=FALSE}
+dir_name = "solarzellen_data"
+solarcell_files_names = list.files(path = dir_name, pattern="/*.csv")
+solarcell_files_names<- paste(dir_name, solarcell_files_names, sep = "/")
+solarcell_tbl <- data_frame("datum"=character(0), "zaehlerstand_morgens"= numeric(0), "zaehlerstand_abends" = numeric(0),"produktion"= numeric(0),"eigen_verbrauch"= numeric(0),"eingespeist"= numeric(0))
+
+solarcell_tbl = lapply(solarcell_files_names, read_csv2) %>% bind_rows()
+#using lubridate to make the 'Datum' column more usefull
+solarcell_tbl$Datum <- dmy(solarcell_tbl$Datum)
+solarcell_tbl$YEAR <- year(solarcell_tbl$Datum)
+solarcell_tbl$MONTH <- month(solarcell_tbl$Datum)
+solarcell_tbl$DAY <- day(solarcell_tbl$Datum)
+
+```
+## First processing
+### Add standard deviation and mean
+```{r basic_stats}
+solarcell_tbl_avg <- summarySE(solarcell_tbl, measurevar="Produktion", groupvars=c("YEAR","MONTH"))
+#summary over for months
+solarcell_tbl_avg %>% 
+  group_by( MONTH) %>% 
+  summarise_at(vars(Produktion), funs(mean,sd))
+
+#summary over for year
+solarcell_tbl_avg %>% 
+  group_by(YEAR) %>% 
+  summarise_at(vars(Produktion), funs(mean,sd))
+```
+
+### Add classification 
+Any daily production exceeding 40 kW is considered a fine day, between 20 and 40 kW middling, and anything below is considered a bad day.
+
+```{r weather_classification}
+solarcell_tbl$rating <- sapply(solarcell_tbl$Produktion, wetter)
+```
+
+```{r prepare_fit}
+y <- solarcell_tbl$Produktion
+t <- 1:nrow(solarcell_tbl)
+x <- solarcell_tbl$Datum
+
+
+# sinus fit 
+#1
+ssp <- spectrum(y) 
+per <- 1/ssp$freq[ssp$spec==max(ssp$spec)]
+reslm <- lm(y ~ sin(2*pi/per*t)+cos(2*pi/per*t))
+summary(reslm)
+
+rg <- diff(range(y))
+plot(y~t,ylim=c(min(y)-0.1*rg,max(y)+0.1*rg))
+lines(fitted(reslm)~t,col=4,lty=1)   # dashed blue line is sin fit
+
+# including 2nd harmonic really improves the fit
+reslm2 <- lm(y ~ sin(2*pi/per*t)+cos(2*pi/per*t)+sin(4*pi/per*t)+cos(4*pi/per*t))
+summary(reslm2)
+lines(fitted(reslm2)~t,col=3) 
+
+#2 fft
+raw.fft = fft(y)
+```
+## First Plot
+
+###Scatter plot with sinus fit
+```{r  scatter_plot, echo=FALSE}
+ggplot(data = solarcell_tbl, aes(x = Datum, y = Produktion)) + 
+  geom_point() + 
+  geom_smooth(se=FALSE, method="lm", formula = y ~ sin(2*pi/per*x)+cos(2*pi/per*x))
+```
+### Add classification variables for year, month and day
+```{r}
+solarcell_tbl$YEAR <- year(solarcell_tbl$Datum)
+solarcell_tbl$MONTH <- month(solarcell_tbl$Datum)
+solarcell_tbl$DAY <- day(solarcell_tbl$Datum)
+```
+
+###Scatter plot by year
+```{r scatter_plot_year, echo=FALSE }
+
+ggplot(data = solarcell_tbl, aes(x = MONTH, y = Produktion )) + 
+  geom_point() +
+  facet_wrap(~YEAR) +
+  geom_smooth(se=FALSE, method="lm", formula = y ~ sin(2*pi/per*x)+cos(2*pi/per*x)+sin(4*pi/per*x)+cos(4*pi/per*x))
+
+
+```
+### Monthly averages plot
+
+```{r scatter_plot_month, echo=FALSE }
+ggplot(data = solarcell_tbl_avg, aes(x = MONTH, y = Produktion )) + 
+  geom_bar(aes(fill=YEAR), position=position_dodge(.9), stat="identity") +
+  facet_wrap(~YEAR) +
+  geom_errorbar(aes(ymin=Produktion-se, ymax=Produktion+se),
+                width=.2,                    # Width of the error bars
+                position=position_dodge(.9))
+```
+
+### Plot months in a row
+```{r}
+xx <-1:nrow(solarcell_tbl_avg)
+
+ggplot(data = solarcell_tbl_avg, aes(x=xx, y = Produktion )) + geom_bar( stat="identity", width = 0.5)
+  
+```

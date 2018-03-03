@@ -4,6 +4,7 @@ library(dplyr)
 library(ggplot2)
 library(lubridate)
 source("summary_se.R")
+source("solar_auswertung.R")
 
 dir_name = "solarzellen_data"
 solarcell_files_names = list.files(path = dir_name, pattern="/*.csv")
@@ -14,6 +15,7 @@ solarcell_tbl = lapply(solarcell_files_names, read_csv2) %>% bind_rows()
 #using lubridate to make the Datum column more usefull
 solarcell_tbl$Datum <- dmy(solarcell_tbl$Datum)
 solarcell_tbl <- summarySE(solarcell_tbl, measurevar="Produktion", groupvars=c("YEAR","MONTH"))
+solarcell_tbl$rating <- sapply(solarcell_tbl$Produktion, wetter)
 
 
 y <- solarcell_tbl$Produktion
@@ -94,6 +96,9 @@ solarcell_tbl %>%
   group_by(YEAR) %>% 
   summarise_at(vars(Produktion), funs(mean,sd))
 
+
+
+
 # for(file in  solarcell_files_names) {
 #   tmp <- read_csv2(file)
 #   bind_rows(solarcell_tbl,tmp) 
@@ -117,10 +122,17 @@ truncated.fft[1] = 0
 # Here, I set omega based on the largest value using which.max().
 omega = which.max(abs(truncated.fft)) * 2 * pi / length(y)
 
-#3 tidyverse
+#3 tidyverse test
+
 tt <- solarcell_tbl %>% 
   group_by(YEAR, MONTH) %>% 
   summarise(Produktion)
 str(tt)
 x <-1:nrow(tt)
 ggplot(tt, aes(x=x, y=P)) + geom_bar(stat = "identity", width = 0.5)
+
+
+
+
+
+
