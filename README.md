@@ -215,6 +215,8 @@ How many days with fine weather do we have here in Stuttgart
 Atmospheric conditions
 ----------------------
 
+The question was how many days the weather here stays constant, i.e. how many days of fine weather do we have in series. As it turns out, we have a weather here, which changes quite often. Suprise ;(
+
 ``` r
 atmospheric_conditions_df <- atm_condition_fn(solarcell_tbl, "rating")
 atmospheric_conditions_df$atm_condition <- factor(atmospheric_conditions_df$atm_condition)

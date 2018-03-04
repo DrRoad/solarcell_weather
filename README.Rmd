@@ -136,6 +136,7 @@ ggplot(data = solarcell_tbl, aes(rating)) + geom_histogram(stat="count") + facet
 ```
 
 ## Atmospheric conditions
+The question was how many days the weather here stays constant, i.e. how many days of fine weather do we have in series. As it turns out, we have a weather here, which changes quite often. Suprise ;(
 
 ```{r atmospheric_conditions }
 atmospheric_conditions_df <- atm_condition_fn(solarcell_tbl, "rating")
