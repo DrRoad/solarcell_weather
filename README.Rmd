@@ -54,7 +54,7 @@ solarcell_tbl_avg %>%
 ### Add classification 
 Any daily production exceeding 40 kW is considered a fine day, between 20 and 40 kW middling, and anything below is considered a bad day.
 
-```{r weather_classification}
+```{r weather_classification_1}
 solarcell_tbl$rating <- sapply(solarcell_tbl$Produktion, wetter)
 ```
 
@@ -130,7 +130,7 @@ ggplot(data = solarcell_tbl_avg, aes(x=xx, y = Produktion )) + geom_bar( stat="i
 ## And now for the weather
 How many days with fine weather do we have here in Stuttgart
 
-```{r weather_classification, echo=FALSE}
+```{r weather_classification_2, echo=FALSE}
 ggplot(data = solarcell_tbl, aes(rating)) + geom_histogram(stat="count") + facet_wrap(~YEAR)
 
 ```
@@ -140,7 +140,8 @@ ggplot(data = solarcell_tbl, aes(rating)) + geom_histogram(stat="count") + facet
 ```{r atmospheric_conditions }
 atmospheric_conditions_df <- atm_condition_fn(solarcell_tbl, "rating")
 atmospheric_conditions_df$atm_condition <- factor(atmospheric_conditions_df$atm_condition)
-ggplot(data = atmospheric_conditions_df, aes(x=duration, fill = atm_condition)) + geom_histogram(binwidth=.5, alpha=.5, position = "dodge")
+ggplot(data = atmospheric_conditions_df, aes(x=duration, fill = atm_condition)) + geom_histogram(binwidth=.5, position = "dodge") +
+  scale_x_continuous(breaks = round(seq(min(atmospheric_conditions_df$duration), max(atmospheric_conditions_df$duration), by = 1),1)) 
 
 
 ```

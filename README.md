@@ -201,4 +201,25 @@ xx <-1:nrow(solarcell_tbl_avg)
 ggplot(data = solarcell_tbl_avg, aes(x=xx, y = Produktion )) + geom_bar( stat="identity", width = 0.5)
 ```
 
-![](README_files/figure-markdown_github-ascii_identifiers/unnamed-chunk-2-1.png)
+![](README_files/figure-markdown_github-ascii_identifiers/monthly_solar_cell_production-1.png)
+
+And now for the weather
+-----------------------
+
+How many days with fine weather do we have here in Stuttgart
+
+    ## Warning: Ignoring unknown parameters: binwidth, bins, pad
+
+![](README_files/figure-markdown_github-ascii_identifiers/weather_classification_2-1.png)
+
+Atmospheric conditions
+----------------------
+
+``` r
+atmospheric_conditions_df <- atm_condition_fn(solarcell_tbl, "rating")
+atmospheric_conditions_df$atm_condition <- factor(atmospheric_conditions_df$atm_condition)
+ggplot(data = atmospheric_conditions_df, aes(x=duration, fill = atm_condition)) + geom_histogram(binwidth=.5, position = "dodge") +
+  scale_x_continuous(breaks = round(seq(min(atmospheric_conditions_df$duration), max(atmospheric_conditions_df$duration), by = 1),1)) 
+```
+
+![](README_files/figure-markdown_github-ascii_identifiers/atmospheric_conditions-1.png)
