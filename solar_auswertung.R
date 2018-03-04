@@ -1,13 +1,38 @@
 wetter <- function(leistung){
-  if(leistung >= 40){
-    return("schoen")
-  }else if ( leistung >= 20){
-    return("durchschnitt")
+  if(leistung >= 35){
+    return("fine")
+  }else if ( leistung >= 15){
+    return("middling")
   }else{
-    return("schlecht")
+    return("bad")
   }
 }
 
+#new atmospheric condition analyzer
+atm_condition_fn <- function(data, rating_colum ) {
+  #a couple of temp variables
+  counter <- 1
+  rating <- data[rating_colum]
+  length_of_data <- nrow(rating)
+  tmp <- rating[1,]
+  atmospheric_conditions_df <- data_frame(atm_condition = character(), duration = numeric())
+  for(i in 2:length_of_data) {
+    if(rating[i,] == tmp){
+      counter <- counter+1
+    } else {
+      # add a new row
+     atmospheric_conditions_df[nrow(atmospheric_conditions_df) + 1,] = c(tmp, counter)
+      counter <- 1
+    }
+    tmp <- rating[i,]
+  }
+  #don't forget the last entry
+  atmospheric_conditions_df[nrow(atmospheric_conditions_df) + 1,] = c(tmp, counter)
+  return(atmospheric_conditions_df)
+}
+
+
+######################################## old stuff #######################################
 #returns a list with attributes anzahl tage schoen, schlecht and durchschnitt
 prepare4weathersituationHist <-function(wetter_solar_prod) {
   

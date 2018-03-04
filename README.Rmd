@@ -120,9 +120,28 @@ ggplot(data = solarcell_tbl_avg, aes(x = MONTH, y = Produktion )) +
 ```
 
 ### Plot months in a row
-```{r}
+```{r monthly_solar_cell_production}
 xx <-1:nrow(solarcell_tbl_avg)
 
 ggplot(data = solarcell_tbl_avg, aes(x=xx, y = Produktion )) + geom_bar( stat="identity", width = 0.5)
   
 ```
+
+## And now for the weather
+How many days with fine weather do we have here in Stuttgart
+
+```{r weather_classification, echo=FALSE}
+ggplot(data = solarcell_tbl, aes(rating)) + geom_histogram(stat="count") + facet_wrap(~YEAR)
+
+```
+
+## Atmospheric conditions
+
+```{r atmospheric_conditions }
+atmospheric_conditions_df <- atm_condition_fn(solarcell_tbl, "rating")
+atmospheric_conditions_df$atm_condition <- factor(atmospheric_conditions_df$atm_condition)
+ggplot(data = atmospheric_conditions_df, aes(x=duration, fill = atm_condition)) + geom_histogram(binwidth=.5, alpha=.5, position = "dodge")
+
+
+```
+
