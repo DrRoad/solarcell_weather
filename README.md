@@ -225,3 +225,18 @@ ggplot(data = atmospheric_conditions_df, aes(x=duration, fill = atm_condition)) 
 ```
 
 ![](README_files/figure-markdown_github-ascii_identifiers/atmospheric_conditions-1.png)
+
+``` r
+ggplot(data = atmospheric_conditions_df, aes(x=duration)) + geom_histogram(binwidth=.5, position = "identity") +
+  facet_wrap(~atm_condition)
+```
+
+![](README_files/figure-markdown_github-ascii_identifiers/atmospheric_conditions_facet-1.png)
+
+``` r
+  scale_x_continuous(breaks = round(seq(min(atmospheric_conditions_df$duration), max(atmospheric_conditions_df$duration), by = 1),1)) 
+```
+
+    ## <ScaleContinuousPosition>
+    ##  Range:  
+    ##  Limits:    0 --    1
