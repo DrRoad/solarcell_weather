@@ -12,6 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 #load solarzellen data
 library(readr)
 library(dplyr)
+library(tidyr)
 library(ggplot2)
 library(lubridate)
 source("summary_se.R")
@@ -152,5 +153,51 @@ ggplot(data = atmospheric_conditions_df, aes(x=duration)) + geom_histogram(binwi
   facet_wrap(~atm_condition)
   scale_x_continuous(breaks = round(seq(min(atmospheric_conditions_df$duration), max(atmospheric_conditions_df$duration), by = 1),1)) 
 
+
+```
+## Read DWD Weather Data from Stuttgart Airport
+The data can be obtained from: "https://www.dwd.de/DE/leistungen/weste/westexl/weste_xl.html". You need to register, which can be done at no charge. I have chosen 'sun shine duration', 'top windspeed' and 'mean temperature'. The data are on a per day basis.
+
+```{r read_weather_data}
+weather_data <- read_csv2(file = "weste_product_2018_03_10__09_21_28/weste_product_2018_03_10__09_21_27.csv")
+weather_data$Datum <- parse_date_time(weather_data$Datum, "ymd")
+str(weather_data)
+```
+### tidy the waether_data
+as stated in "http://tidyr.tidyverse.org"
+The goal of tidyr is to help you create tidy data. Tidy data is data where:
+
+- Each variable is in a column.
+- Each observation is a row.
+- Each value is a cell.
+But in the weather_data from 'weste-xl' in the column 'Element' are 3 levels, representing 3 different measurement variables (sun shine duraration wind speed and temperature)
+
+```{r}
+tmp <- weather_data[c("Datum", "Element", "Wert")]
+temp2 <- tidyr::spread(tmp, key = Element, value = Wert)
+temp2$Datum <- ymd(temp2$Datum)
+solarcell_tbl <- inner_join(solarcell_tbl, temp2)
+```
+## Predict daily power production from sun shine duration
+
+```{r linear_fit_produktion}
+fit_sonne_prod <- lm(solarcell_tbl$Produktion ~ solarcell_tbl$Sonnenscheindauer)
+prd <- predict(fit_sonne_prod, interval="prediction")
+solarcell_tbl_fit <- cbind(solarcell_tbl, prd)
+
+ggplot(data = solarcell_tbl_fit, aes(x = Sonnenscheindauer, y = Produktion)) + 
+  geom_point() +
+  geom_line(aes(y=lwr), color = "red", linetype = "dashed") +
+  geom_line(aes(y=upr), color = "red", linetype = "dashed") +
+  geom_smooth(method=lm, level=0.99, se=TRUE, color="darkred", fill="blue") 
+fit_sonne_prod$coefficients
+```
+```{r polynomial_fit_produktion}
+fit_sonne_prod4 <- lm(solarcell_tbl$Produktion ~ poly(solarcell_tbl$Sonnenscheindauer, 4, raw =T), data = solarcell_tbl)
+prd4 <- predict(fit_sonne_prod4, interval="prediction")
+solarcell_tbl_fit4 <- cbind(solarcell_tbl, prd)
+ggplot(data = solarcell_tbl_fit4, aes(x = Sonnenscheindauer, y = Produktion)) + 
+  geom_point() + 
+  geom_smooth(se=TRUE, method="lm", formula = y ~ poly(x, 4, raw =T), color="darkred", fill="blue", level =0.99)
 
 ```
