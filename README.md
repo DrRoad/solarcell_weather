@@ -360,11 +360,28 @@ ggplot(data = solarcell_tbl_fit, aes(x = Sonnenscheindauer, y = Produktion)) +
 ![](README_files/figure-markdown_github/linear_fit_produktion-1.png)
 
 ``` r
-fit_sonne_prod$coefficients
+#summary(fit_sonne_prod)fit_sonne_prod$coefficients
+summary(fit_sonne_prod)
 ```
 
-    ##                     (Intercept) solarcell_tbl$Sonnenscheindauer 
-    ##                        9.006520                        3.923757
+    ## 
+    ## Call:
+    ## lm(formula = solarcell_tbl$Produktion ~ solarcell_tbl$Sonnenscheindauer)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -47.067  -5.787  -0.580   4.939  34.476 
+    ## 
+    ## Coefficients:
+    ##                                 Estimate Std. Error t value Pr(>|t|)    
+    ## (Intercept)                      9.00652    0.26892   33.49   <2e-16 ***
+    ## solarcell_tbl$Sonnenscheindauer  3.92376    0.04031   97.33   <2e-16 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 8.226 on 2165 degrees of freedom
+    ## Multiple R-squared:  0.814,  Adjusted R-squared:  0.8139 
+    ## F-statistic:  9473 on 1 and 2165 DF,  p-value: < 2.2e-16
 
 ``` r
 fit_sonne_prod4 <- lm(solarcell_tbl$Produktion ~ poly(solarcell_tbl$Sonnenscheindauer, 4, raw =T), data = solarcell_tbl)
@@ -381,3 +398,134 @@ ggplot(data = solarcell_tbl_fit4, aes(x = Sonnenscheindauer, y = Produktion)) +
 ```
 
 ![](README_files/figure-markdown_github/polynomial_fit_produktion-1.png)
+
+### Use wind and temperatur to get better predictions
+
+### using a linear model
+
+``` r
+fit_sonne_prod_multi <- lm(solarcell_tbl$Produktion ~ solarcell_tbl$Sonnenscheindauer +  solarcell_tbl$`Lufttemperatur Tagesmittel` + solarcell_tbl$Windspitze)
+summary(fit_sonne_prod_multi)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = solarcell_tbl$Produktion ~ solarcell_tbl$Sonnenscheindauer + 
+    ##     solarcell_tbl$`Lufttemperatur Tagesmittel` + solarcell_tbl$Windspitze)
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -48.528  -5.278  -0.826   4.648  28.959 
+    ## 
+    ## Coefficients:
+    ##                                            Estimate Std. Error t value
+    ## (Intercept)                                 5.56162    0.45160  12.315
+    ## solarcell_tbl$Sonnenscheindauer             3.44355    0.04246  81.106
+    ## solarcell_tbl$`Lufttemperatur Tagesmittel`  0.57007    0.02533  22.503
+    ## solarcell_tbl$Windspitze                   -0.01095    0.04266  -0.257
+    ##                                            Pr(>|t|)    
+    ## (Intercept)                                  <2e-16 ***
+    ## solarcell_tbl$Sonnenscheindauer              <2e-16 ***
+    ## solarcell_tbl$`Lufttemperatur Tagesmittel`   <2e-16 ***
+    ## solarcell_tbl$Windspitze                      0.797    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 7.365 on 2158 degrees of freedom
+    ##   (5 observations deleted due to missingness)
+    ## Multiple R-squared:  0.8507, Adjusted R-squared:  0.8505 
+    ## F-statistic:  4100 on 3 and 2158 DF,  p-value: < 2.2e-16
+
+``` r
+vif(fit_sonne_prod_multi)
+```
+
+    ##            solarcell_tbl$Sonnenscheindauer 
+    ##                                   1.374828 
+    ## solarcell_tbl$`Lufttemperatur Tagesmittel` 
+    ##                                   1.411425 
+    ##                   solarcell_tbl$Windspitze 
+    ##                                   1.063149
+
+You can see that Wind has no discrenible effect on the production of the solar cells, but temperature clearly has. The variance inflation factors calculated by vif() show that variable are uncorrelated from each other. To see if there is a wind chilling effect we would have to compare the power production on days with high sun duration and low wind with days with high sun duration and low wind speeds. \#\#\# using a polynomial model
+
+``` r
+fit_sonne_prod_polym <- lm(solarcell_tbl$Produktion ~ polym( solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`,solarcell_tbl$Windspitze, degree = 2, raw=TRUE))
+summary(fit_sonne_prod_polym)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = solarcell_tbl$Produktion ~ polym(solarcell_tbl$Sonnenscheindauer, 
+    ##     solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, 
+    ##     degree = 2, raw = TRUE))
+    ## 
+    ## Residuals:
+    ##     Min      1Q  Median      3Q     Max 
+    ## -48.905  -4.176  -0.349   4.166  30.225 
+    ## 
+    ## Coefficients:
+    ##                                                                                                                                            Estimate
+    ## (Intercept)                                                                                                                               -0.673669
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.0  4.545663
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)2.0.0 -0.072892
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.0  1.101115
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.1.0 -0.045024
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.2.0 -0.011641
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.1  0.611461
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.1  0.047404
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.1 -0.008900
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.2 -0.035459
+    ##                                                                                                                                           Std. Error
+    ## (Intercept)                                                                                                                                 0.889875
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.0   0.149074
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)2.0.0   0.011011
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.0   0.071705
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.1.0   0.006887
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.2.0   0.002803
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.1   0.153766
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.1   0.012275
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.1   0.006947
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.2   0.006471
+    ##                                                                                                                                           t value
+    ## (Intercept)                                                                                                                                -0.757
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.0  30.493
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)2.0.0  -6.620
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.0  15.356
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.1.0  -6.537
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.2.0  -4.153
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.1   3.977
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.1   3.862
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.1  -1.281
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.2  -5.480
+    ##                                                                                                                                           Pr(>|t|)
+    ## (Intercept)                                                                                                                               0.449111
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.0  < 2e-16
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)2.0.0 4.52e-11
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.0  < 2e-16
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.1.0 7.80e-11
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.2.0 3.41e-05
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.1 7.22e-05
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.1 0.000116
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.1 0.200298
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.2 4.76e-08
+    ##                                                                                                                                              
+    ## (Intercept)                                                                                                                                  
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.0 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)2.0.0 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.0 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.1.0 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.2.0 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.1 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)1.0.1 ***
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.1.1    
+    ## polym(solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`, solarcell_tbl$Windspitze, degree = 2, raw = TRUE)0.0.2 ***
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 6.807 on 2152 degrees of freedom
+    ##   (5 observations deleted due to missingness)
+    ## Multiple R-squared:  0.8728, Adjusted R-squared:  0.8723 
+    ## F-statistic:  1641 on 9 and 2152 DF,  p-value: < 2.2e-16
+
+Judging from the F statistics using a polynomial model did not improve on the linear model.
