@@ -53,6 +53,11 @@ solarcell_tbl_avg %>%
 solarcell_tbl_avg %>% 
   group_by(YEAR) %>% 
   summarise_at(vars(Produktion), funs(mean,sd))
+
+#total produktion
+solarcell_tbl %>% 
+  group_by(YEAR) %>% 
+  summarise_at(vars(Produktion), funs(sum, mean,sd))
 ```
 
 ### Add classification 

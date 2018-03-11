@@ -83,6 +83,23 @@ solarcell_tbl_avg %>%
     ## 5 2016.  28.0  13.3
     ## 6 2017.  29.5  15.0
 
+``` r
+#total produktion
+solarcell_tbl %>% 
+  group_by(YEAR) %>% 
+  summarise_at(vars(Produktion), funs(sum, mean,sd))
+```
+
+    ## # A tibble: 6 x 4
+    ##    YEAR    sum  mean    sd
+    ##   <dbl>  <dbl> <dbl> <dbl>
+    ## 1 2012. 10499.  30.8  18.6
+    ## 2 2013.  9341.  25.6  19.2
+    ## 3 2014. 10396.  28.5  18.6
+    ## 4 2015. 10976.  30.1  19.2
+    ## 5 2016. 10280.  28.1  18.5
+    ## 6 2017. 10776.  29.5  19.9
+
 ### Add classification
 
 Any daily production exceeding 40 kW is considered a fine day, between 20 and 40 kW middling, and anything below is considered a bad day.
