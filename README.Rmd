@@ -221,11 +221,22 @@ summary(fit_sonne_prod_multi)
 vif(fit_sonne_prod_multi)
 
 ```
-
+### Check for wind chill effect on hot days
 You can see that Wind has no discrenible effect on the production of the solar cells, but temperature clearly has. The variance inflation factors calculated by vif() show that variable are uncorrelated from each other. To see if there is a wind chilling effect we would have to compare the power production on days with high sun duration and low wind with days with high sun duration and low wind speeds.
+One Idea would be, to only look for days with hight temperature, where wind chill would have a discernable effect, but this is still not the case.
+```{r hight_temp_and_prod}
+filter_sonne_prod_multi <- solarcell_tbl %>% filter(`Lufttemperatur Tagesmittel` >= 18)
+fit_filter_sonne_prod_multi <- lm(filter_sonne_prod_multi$Produktion ~ filter_sonne_prod_multi$Sonnenscheindauer +  filter_sonne_prod_multi$`Lufttemperatur Tagesmittel` + filter_sonne_prod_multi$Windspitze)
+summary(fit_filter_sonne_prod_multi)
+
+vif(fit_filter_sonne_prod_multi)
+```
+
 ### using a polynomial model
+
 ```{r polym}
 fit_sonne_prod_polym <- lm(solarcell_tbl$Produktion ~ polym( solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`,solarcell_tbl$Windspitze, degree = 2, raw=TRUE))
 summary(fit_sonne_prod_polym)
 ```
 Judging from the F statistics using a polynomial model did not improve on the linear model.
+

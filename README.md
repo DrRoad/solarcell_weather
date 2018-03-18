@@ -464,7 +464,56 @@ vif(fit_sonne_prod_multi)
     ##                   solarcell_tbl$Windspitze 
     ##                                   1.063149
 
-You can see that Wind has no discrenible effect on the production of the solar cells, but temperature clearly has. The variance inflation factors calculated by vif() show that variable are uncorrelated from each other. To see if there is a wind chilling effect we would have to compare the power production on days with high sun duration and low wind with days with high sun duration and low wind speeds. \#\#\# using a polynomial model
+### Check for wind chill effect on hot days
+
+You can see that Wind has no discrenible effect on the production of the solar cells, but temperature clearly has. The variance inflation factors calculated by vif() show that variable are uncorrelated from each other. To see if there is a wind chilling effect we would have to compare the power production on days with high sun duration and low wind with days with high sun duration and low wind speeds. One Idea would be, to only look for days with hight temperature, where wind chill would have a discernable effect, but this is still not the case.
+
+``` r
+filter_sonne_prod_multi <- solarcell_tbl %>% filter(`Lufttemperatur Tagesmittel` >= 18)
+fit_filter_sonne_prod_multi <- lm(filter_sonne_prod_multi$Produktion ~ filter_sonne_prod_multi$Sonnenscheindauer +  filter_sonne_prod_multi$`Lufttemperatur Tagesmittel` + filter_sonne_prod_multi$Windspitze)
+summary(fit_filter_sonne_prod_multi)
+```
+
+    ## 
+    ## Call:
+    ## lm(formula = filter_sonne_prod_multi$Produktion ~ filter_sonne_prod_multi$Sonnenscheindauer + 
+    ##     filter_sonne_prod_multi$`Lufttemperatur Tagesmittel` + filter_sonne_prod_multi$Windspitze)
+    ## 
+    ## Residuals:
+    ##      Min       1Q   Median       3Q      Max 
+    ## -27.7824  -3.1407  -0.2803   3.3815  23.7594 
+    ## 
+    ## Coefficients:
+    ##                                                      Estimate Std. Error
+    ## (Intercept)                                          31.39154    2.69873
+    ## filter_sonne_prod_multi$Sonnenscheindauer             2.59395    0.08523
+    ## filter_sonne_prod_multi$`Lufttemperatur Tagesmittel` -0.39172    0.13542
+    ## filter_sonne_prod_multi$Windspitze                    0.04087    0.08271
+    ##                                                      t value Pr(>|t|)    
+    ## (Intercept)                                           11.632  < 2e-16 ***
+    ## filter_sonne_prod_multi$Sonnenscheindauer             30.436  < 2e-16 ***
+    ## filter_sonne_prod_multi$`Lufttemperatur Tagesmittel`  -2.893  0.00404 ** 
+    ## filter_sonne_prod_multi$Windspitze                     0.494  0.62148    
+    ## ---
+    ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1
+    ## 
+    ## Residual standard error: 5.787 on 388 degrees of freedom
+    ##   (2 observations deleted due to missingness)
+    ## Multiple R-squared:  0.7357, Adjusted R-squared:  0.7337 
+    ## F-statistic:   360 on 3 and 388 DF,  p-value: < 2.2e-16
+
+``` r
+vif(fit_filter_sonne_prod_multi)
+```
+
+    ##            filter_sonne_prod_multi$Sonnenscheindauer 
+    ##                                             1.253977 
+    ## filter_sonne_prod_multi$`Lufttemperatur Tagesmittel` 
+    ##                                             1.204914 
+    ##                   filter_sonne_prod_multi$Windspitze 
+    ##                                             1.065019
+
+### using a polynomial model
 
 ``` r
 fit_sonne_prod_polym <- lm(solarcell_tbl$Produktion ~ polym( solarcell_tbl$Sonnenscheindauer, solarcell_tbl$`Lufttemperatur Tagesmittel`,solarcell_tbl$Windspitze, degree = 2, raw=TRUE))
